@@ -68,7 +68,7 @@ namespace RyzenTuner.Common.Processor
         {
             var r1 = SetTdpLimit(PowerType.Slow, limit);
             var r2 = SetTdpLimit(PowerType.Stapm, limit);
-            var r3 = SetTdpLimit(PowerType.Fast, limit);
+            var r3 = SetTdpLimit(PowerType.Fast, limit+5.0);
 
             return r1 && r2 && r3;
         }
