@@ -1,0 +1,66 @@
+name: RyzenTuner Release Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [ Release ]
+        platform: [ x64 ]
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: RyzenTuner.sln
+      Project_Name: RyzenTuner
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v1
+
+      - name: Restore Packages
+        run: nuget restore $env:Solution_Name
+
+      - name: Build
+        run: msbuild $env:Solution_Name
+
+      - name: Install packages
+        run: |
+          choco install wget --no-progress
+          choco install unzip --no-progress
+      - name: Add dependencies
+        run: |
+          wget -O libryzenadj-win64.zip https://github.com/FlyGoat/RyzenAdj/releases/download/v0.12.0/libryzenadj-win64.zip
+          unzip libryzenadj-win64.zip
+          cp build/libryzenadj.dll ./bin/Release
+          cp win32/inpoutx64.dll ./bin/Release
+          cp win32/WinRing0x64.dll ./bin/Release
+          cp win32/WinRing0x64.sys ./bin/Release
+      - name: Generate artifact name
+        id: generate-name
+        run: |
+          echo "::set-output name=artifact::${{ github.event.repository.name }}.${{ github.ref_name }}.${{ github.run_id }}.zip"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.generate-name.outputs.artifact }}
+          path: "./bin/Release"
