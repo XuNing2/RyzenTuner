@@ -11,6 +11,7 @@ on:
         options:
           - info
           - warning
+          - debug
 
 jobs:
   build:
@@ -20,7 +21,7 @@ jobs:
         platform: [ x64 ]
 
     runs-on: windows-latest
-
+    
     env:
       Solution_Name: RyzenTuner.sln
       Project_Name: RyzenTuner
